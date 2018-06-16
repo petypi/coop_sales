@@ -1,0 +1,504 @@
+<openerp>
+    <data>
+
+        <!--sale.order: tree-->
+        <record id="sale_order_duplicate_warn_tree" model="ir.ui.view">
+            <field name="name">sale.order.duplicate.warn.tree</field>
+            <field name="model">sale.order</field>
+            <field name="inherit_id" ref="sale.view_quotation_tree"/>
+            <field name="arch" type="xml">
+                <tree position="attributes">
+                    <attribute name="decoration-warning">is_duplicate==True</attribute>
+                </tree>
+
+                <field name="state" position="after">
+                    <field name="is_duplicate"/>
+                </field>
+            </field>
+        </record>
+
+        <!--Start- Code to hide the check price button that appears when you select home delivery-->
+        <record id="view_delivery_method_extension" model="ir.ui.view">
+            <field name="name">view.delivery.method.extension</field>
+            <field name="model">sale.order</field>
+            <field name="inherit_id" ref="delivery.view_order_form_with_carrier"/>
+            <field name="arch" type="xml">
+                <xpath expr="//field[@name='delivery_price']" position="attributes">
+                    <attribute name="invisible">True</attribute>
+                </xpath>
+                <xpath expr="//button[@name='get_delivery_price']" position="attributes">
+                    <attribute name="invisible">True</attribute>
+                </xpath>
+            </field>
+        </record>
+        <!--End- Code to hide the check price button that appears when you select home delivery-->
+
+        <record model="ir.ui.view" id="sale_order_extension_form">
+            <field name="name">sale.order.extension</field>
+            <field name="model">sale.order</field>
+            <field name="inherit_id" ref="sale.view_order_form"/>
+            <field name="arch" type="xml">
+
+                <field name="partner_shipping_id" position="replace"/>
+                <field name="partner_invoice_id" position="replace"/>
+
+                <!-- state: add new states -->
+                <field name="state" position="replace">
+                    <field name="state" widget="statusbar" statusbar_visible="payment_required,partner_shipping_required, draft,sent,sale"/>
+                </field>
+
+                <!--additional fields-->
+                <xpath expr="//field[@name='partner_id']" position="replace">
+                    <field name="partner_id"
+                           string="Agent"
+                           domain="[('is_agent', '=', True)]"
+                           options="{'no_create': True}"
+                           attrs="{'readonly':[('state', '!=', 'draft')]}"/>
+                </xpath>
+
+                <field name="partner_id" position="after">
+                    <field name="id" invisible="True"/>
+                    <field name="customer_id"
+                           domain="[('customer', '=', True)]"
+                           options="{'no_create': True}"
+                           attrs="{'readonly':[('state', '!=', 'draft')]}"/>
+                    <field name="islayaway"/>
+                    <field name="is_duplicate"/>
+                    <field name="mode" readonly="1"/>
+                    <field name="route_type" attrs="{'readonly': [('state', '=', 'confirm')]}"/>
+                    <field name="split_ref" attrs="{ 'invisible' : [('split_ref', '=', False)]}"/>
+                    <field name="reject_reason" readonly="True" attrs="{ 'invisible' : [('state', '!=', 'rejected')]}"/>
+                    <field name="sale_type_id" readonly="True"/>
+                    <field name="hot_list" invisible="True"/>
+                    <field name="fake_hot_list" invisible="True"/>
+                </field>
+                <field name="payment_term_id" position="attributes">
+                    <attribute name="attrs">{'readonly': [('state', '=', 'confirm')]}</attribute>
+                </field>
+
+
+                <field name="customer_id" position="after">
+                    <field name="partner_shipping_id"
+                           groups="sale.group_delivery_invoice_address,sales_team.group_sale_manager,sales_team.group_sale_salesman_all_leads"
+                           context="{'default_type':'delivery'}" options='{"always_reload": True}'
+                           domain="[('partner_type', '=', 'agent'), ('can_purchase', '=', True), ('active_agent', '=', True)]"/>
+                    <field name="partner_invoice_id" groups="sale.group_delivery_invoice_address"
+                           context="{'default_type':'invoice'}" options='{"always_reload": True}' readonly="1"/>
+                </field>
+
+                <field name="partner_shipping_id" position="after">
+                    <field name="remote_customer_id"
+                           options="{'no_create': True}"
+                           attrs="{'invisible' : [('remote_shopping','!=',True)], 'required' :  [('remote_shopping','=',True)]}"/>
+                </field>
+
+                <!-- hide customer and supplier -->
+                <field name="partner_shipping_id" position="attributes">
+                    <attribute name="attrs">{'readonly': [('remote_shopping', '=', False)], 'invisible' :
+                        [('remote_shopping','=',False)], 'required' : [('remote_shopping','=',True)]}
+                    </attribute>
+                </field>
+
+                <!-- hide customer and supplier -->
+                <field name="partner_invoice_id" position="attributes">
+                    <attribute name="attrs">{'readonly': True}</attribute>
+                </field>
+
+                <xpath expr="//field[@name='partner_invoice_id']" position="after">
+                    <field name="remote_shopping"/>
+                </xpath>
+                <!-- Salesperson -->
+
+
+                <!--change the date_order attrs-->
+                <xpath expr="//field[@name='confirmation_date']" position="replace">
+                    <field name="create_date"/>
+                    <field name="date_order" readonly="1" widget="date"/>
+                </xpath>
+
+                <xpath expr="//group[@name='sale_pay']/field[@name='date_order']" position="replace">
+                </xpath>
+
+                <!--delivery date-->
+                <xpath expr="//field[@name='validity_date']" position="replace">
+                    <field name="date_delivery"/>
+                </xpath>
+
+                <!--related orders-->
+                <xpath expr="/form/sheet/notebook/page[last()]" position="after">
+                    <page string="Related Orders" name="related_orders">
+                        <field name="related_orders">
+                            <tree string="Related Sale Orders" class="o_sale_order">
+                                <field name="name"/>
+                                <field name="partner_id"/>
+                                <field name="user_id"/>
+                                <field name="state"/>
+                                <field name="amount_total" sum="Total Tax Included" widget="monetary"/>
+                            </tree>
+                        </field>
+                    </page>
+                </xpath>
+
+                <!-- Modify the action_cancel button -->
+                <button name="action_cancel" position="replace">
+                    <button name="action_cancel" states="draft,sent" class="btn-warning" type="object" string="Cancel"/>
+                </button>
+
+                <!--       &lt;!&ndash; Lock down Order Lines &ndash;&gt;
+                       <field name="order_line" position="attributes">
+                           <attribute name="attrs">{'readonly': [('state', '!=', ('draft'))]}
+                           </attribute>
+                       </field>
+
+                       &lt;!&ndash; Lock down Order Lines &ndash;&gt;
+                       <field name="pricelist_id" position="attributes">
+                           <attribute name="readonly">True</attribute>
+                       </field>-->
+
+                <!-- Salesperson -->
+                <field name="user_id" position="replace">
+                    <field name="sale_associate_id" options="{'no_create': True}"/>
+                </field>
+
+                <xpath expr="//form/sheet/notebook/page/field/tree/field[@name='price_unit']" position="attributes">
+                    <attribute name="readonly">1</attribute>
+                </xpath>
+
+            </field>
+        </record>
+
+        <record model="ir.ui.view" id="view_quotation_tree_extended">
+            <field name="name">sale.order.tree.extended</field>
+            <field name="model">sale.order</field>
+            <field name="inherit_id" ref="sale.view_quotation_tree"/>
+            <field name="arch" type="xml">
+                <field name="date_order" position="after">
+                    <field name="create_date" string="Creation Date"/>
+                    <field name="date_delivery" string="Forecasted Delivery Date"/>
+                </field>
+                <field name="user_id" position="replace">
+                    <field name="sale_associate_id"/>
+                </field>
+                <xpath expr="//field[@name='date_order']" position="attributes">
+                    <attribute name="invisible">True</attribute>
+                </xpath>
+            </field>
+        </record>
+
+        <record id="view_order_tree_extended" model="ir.ui.view">
+            <field name="name">sale.order.tree.extended</field>
+            <field name="model">sale.order</field>
+            <field name="inherit_id" ref="sale.view_order_tree"/>
+            <field name="priority">2</field>
+            <field name="arch" type="xml">
+                <field name="confirmation_date" position="after">
+                    <field name="create_date" string="Creation Date"/>
+                    <field name="date_delivery" string="Forecasted Delivery Date"/>
+                </field>
+                <xpath expr="//field[@name='confirmation_date']" position="attributes">
+                    <attribute name="invisible">True</attribute>
+                </xpath>
+            </field>
+        </record>
+
+
+        <!--draft sale.order-->
+        <record id="action_draft_orders" model="ir.actions.act_window">
+            <field name="name">Draft Orders</field>
+            <field name="type">ir.actions.act_window</field>
+            <field name="res_model">sale.order</field>
+            <field name="view_type">form</field>
+            <field name="view_id" ref="sale.view_quotation_tree"/>
+            <field name="view_mode">tree,kanban,form,calendar,pivot,graph</field>
+            <field name="search_view_id" ref="sale.sale_order_view_search_inherit_quotation"/>
+            <field name="context">{'hide_sale': True}</field>
+            <field name="domain">[['state', '=', 'draft']]</field>
+            <field name="help" type="html">
+                <p class="oe_view_nocontent_create">
+                    Create a Draft Order(Quotation), the first step of a new sale.
+                </p>
+                <p>
+                    Your next actions should flow efficiently: confirm the Draft Order
+                    to a Sale Order, then create the Invoice and collect the Payment.
+                </p>
+                <p>
+                    Note that once a Draft Order becomes a Sale Order, it will be moved
+                    from the Draft Orders list to the Sales Order list.
+                </p>
+            </field>
+        </record>
+        <!--version 7 filters for sale order to odoo-->
+        <record id="agent_order_search_extend" model="ir.ui.view">
+            <field name="name">Filter waylay orders</field>
+            <field name="model">sale.order</field>
+            <field name="inherit_id" ref="sale.view_sales_order_filter"/>
+            <field name="arch" type="xml">
+                <xpath expr="filter[@name='activities_upcoming_all']" position="after">
+                    <separator/>
+                    <filter string="Layaway orders" name="layaway" domain="[('islayaway', '=', True)]"/>
+                    <filter string="Remote Shopping" name="layaway" domain="[('remote_shopping', '=', True)]"/>
+                    <filter string="Duplicate order" name="duplicate" domain="[('is_duplicate', '=', True)]"/>
+                    <separator/>
+                </xpath>
+
+                <xpath expr="//search/group/filter[@name='customer']" position="after">
+                    <filter name="creation_mode" string="Creation Mode" domain="[]" context="{'group_by':'mode'}"/>
+                    <filter name="route_type" string="Route Type" domain="[]" context="{'group_by':'route_type'}"/>
+                </xpath>
+            </field>
+        </record>
+
+        <!--exception sale.order-->
+        <record id="action_sale_order_exceptions" model="ir.actions.act_window">
+            <field name="name">Sale Order Exceptions</field>
+            <field name="type">ir.actions.act_window</field>
+            <field name="res_model">sale.order</field>
+            <field name="view_type">form</field>
+            <field name="view_id" ref="sale.view_quotation_tree"/>
+            <field name="view_mode">tree,kanban,form,calendar,pivot,graph</field>
+            <field name="search_view_id" ref="sale.sale_order_view_search_inherit_quotation"/>
+            <field name="context">{'hide_sale': True}</field>
+            <field name="domain">['|', ['state', 'in', ('rejected',)], ['is_duplicate', '=', True]]</field>
+            <field name="help" type="html">
+                <p class="oe_view_nocontent_create">
+                    Sale Orders that have an Exception.
+                </p>
+                <p>
+                    The exceptions include <b>duplicate</b> and <b>rejected</b> Sale Orders.
+                </p>
+            </field>
+        </record>
+
+        <!-- exclude rejected state from sale.order defualt view -->
+        <record id="sale.action_orders" model="ir.actions.act_window">
+            <field name="name">Sales Orders</field>
+            <field name="type">ir.actions.act_window</field>
+            <field name="res_model">sale.order</field>
+            <field name="view_type">form</field>
+            <field name="view_mode">tree,kanban,form,calendar,pivot,graph</field>
+            <field name="search_view_id" ref="sale.sale_order_view_search_inherit_sale"/>
+            <field name="context">{}</field>
+            <field name="domain">[('state', 'not in', ('draft', 'sent', 'cancel', 'rejected'))]</field>
+            <field name="help" type="html">
+                <p class="oe_view_nocontent_create">
+                    Create a Quotation, the first step of a new sale.
+                </p>
+                <p>
+                    Once the quotation is confirmed, it becomes a sales order.
+                    You'll be able to invoice it and collect payments.
+                    From the <i>Sales Orders</i> menu, you can track delivery
+                    orders or services.
+                </p>
+            </field>
+        </record>
+
+        <!--cancelled sale.order-->
+        <record id="action_sale_order_cancelled" model="ir.actions.act_window">
+            <field name="name">Cancelled Orders</field>
+            <field name="type">ir.actions.act_window</field>
+            <field name="res_model">sale.order</field>
+            <field name="view_type">form</field>
+            <field name="view_id" ref="sale.view_quotation_tree"/>
+            <field name="view_mode">tree,kanban,form,calendar,pivot,graph</field>
+            <field name="search_view_id" ref="sale.sale_order_view_search_inherit_quotation"/>
+            <field name="context">{'hide_sale': True}</field>
+            <field name="domain">[['state', '=', 'cancel']]</field>
+            <field name="help" type="html">
+                <p class="oe_view_nocontent_create">
+                    Sale Orders that have been cancelled.
+                </p>
+            </field>
+        </record>
+
+        <!--loyality form sale.order-->
+        <record id="view_loyalty_program_form" model="ir.ui.view">
+            <field name="name">loyalty.program.form</field>
+            <field name="model">loyalty.program</field>
+            <field name="arch" type="xml">
+                <form string="Loyalty Program">
+                    <sheet>
+
+                        <div class="oe_title">
+                                <label class="oe_edit_only" for="name" string="Loyalty Program Name"/>
+                                <h1><field name="name"/></h1>
+                        </div>
+
+                        <group col="4">
+                            <field name="pp_currency" />
+                            <field name="pp_product" />
+                            <field name="pp_order" />
+                            <field name="rounding" />
+                        </group>
+
+                        <separator string="Rules" colspan="4"/>
+                        <p>Rules change how loyalty points are earned for specific products or categories</p>
+                        <field name="rule_ids" colspan="4" nolabel="1">
+                            <tree string="Rules">
+                                <field name="name" />
+                                <field name="pp_product" />
+                                <field name="pp_currency" />
+                                <field name="cumulative" />
+                            </tree>
+                        </field>
+
+                        <separator string="Rewards" colspan="4"/>
+                        <p>Reward the customer with gifts or discounts for loyalty points</p>
+                        <field name="reward_ids" colspan="4" nolabel="1">
+                            <tree string="Rewards">
+                                <field name="name"/>
+                                <field name="reward_type"/>
+                            </tree>
+                        </field>
+
+                    </sheet>
+                </form>
+            </field>
+        </record>
+
+         <!--Loyality rule form-->
+        <record id="view_loyalty_rule_form" model="ir.ui.view">
+            <field name="name">loyalty.rule.form</field>
+            <field name="model">loyalty.rule</field>
+            <field name="arch" type="xml">
+                <form string="Loyalty Rule">
+                    <div class="oe_title">
+                        <label class="oe_edit_only" for="name" string="Rule Name"/>
+                        <h1><field name="name"/></h1>
+                    </div>
+                    <group col="4">
+                        <group col='2'>
+                            <field name="rule_type" />
+                        </group>
+                        <group col='2'>
+                            <field name="product_id"  attrs="{ 'invisible':[('rule_type','!=','product')],  'required':[('rule_type','==','product')]}" />
+                            <field name="category_id" attrs="{ 'invisible':[('rule_type','!=','category')], 'required':[('rule_type','==','category')]}"/>
+                        </group>
+                    </group>
+                    <group col="6">
+                        <field name="pp_product" />
+                        <field name="pp_currency" />
+                        <field name="cumulative" />
+                    </group>
+                </form>
+            </field>
+        </record>
+
+        <!--Loyality reward form-->
+        <record id="view_loyalty_reward_form" model="ir.ui.view">
+            <field name="name">loyalty.reward.form</field>
+            <field name="model">loyalty.reward</field>
+            <field name="arch" type="xml">
+                <form string="Loyalty Reward">
+                    <div class="oe_title">
+                        <label class="oe_edit_only" for="name" string="Reward Name"/>
+                        <h1><field name="name"/></h1>
+                    </div>
+                    <group>
+                        <field name="reward_type" />
+                    </group>
+                    <group >
+                        <field name="gift_product_id"       attrs="{ 'invisible':[('reward_type','!=','gift')], 'required':[('reward_type','==','gift')] }" />
+                        <label for="discount" attrs="{ 'invisible':[('reward_type','!=','discount')] }"/>
+                        <div class="o_row" attrs="{ 'invisible':[('reward_type','!=','discount')] }">
+                            <field name="discount" />
+                            <label string="%"/>
+                        </div>
+                        <field name="discount_product_id"   attrs="{ 'invisible':[('reward_type','!=','discount')], 'required':[('reward_type','==','discount')] }"/>
+                        <field name="point_product_id"      attrs="{ 'invisible':[('reward_type','!=','resale')],   'required':[('reward_type','==','resale')] }"/>
+                    </group>
+                    <group>
+                        <field name="point_cost"           attrs="{ 'invisible':[('reward_type','=','resale')] }" />
+                        <field name="minimum_points" />
+                    </group>
+                </form>
+            </field>
+        </record>
+
+        <!--order points tree-->
+        <record id="view_loyalty_program_tree" model="ir.ui.view">
+            <field name="name">loyalty.program.form</field>
+            <field name="model">loyalty.program</field>
+            <field name="arch" type="xml">
+                <tree string="Loyalty Programs">
+                    <field name="name" />
+                </tree>
+            </field>
+        </record>
+
+        <!--Loyalty points kanban view-->
+        <record id="view_loyalty_program_kanban" model="ir.ui.view">
+            <field name="name">loyalty.program.kanban</field>
+            <field name="model">loyalty.program</field>
+            <field name="arch" type="xml">
+                <kanban class="o_kanban_mobile">
+                    <field name="name"/>
+                    <field name="pp_currency"/>
+                    <field name="pp_product"/>
+                    <field name="pp_order"/>
+                    <templates>
+                        <t t-name="kanban-box">
+                            <div t-attf-class="oe_kanban_global_click">
+                                <div class="mb4">
+                                    <strong><field name="name"/></strong>
+                                </div>
+                                <div class="mb4" t-if="record.pp_currency.raw_value">
+                                    <span>Points per currency :</span>
+                                    <span class="badge pull-right"><field name="pp_currency"/></span>
+                                </div>
+                                <div class="mb4" t-if="record.pp_product.raw_value">
+                                    <strong>Points per product :</strong>
+                                    <span class="badge pull-right"><field name="pp_product"/></span>
+                                </div>
+                                <div class="mb4" t-if="record.pp_order.raw_value">
+                                    <strong>Points per order :</strong>
+                                    <span class="badge pull-right"><field name="pp_order"/></span>
+                                </div>
+                            </div>
+                        </t>
+                    </templates>
+                </kanban>
+            </field>
+        </record>
+
+        <!--Loyality windows action-->
+        <record id="action_loyalty_program_form" model="ir.actions.act_window">
+            <field name="name">Loyalty Programs</field>
+            <field name="type">ir.actions.act_window</field>
+            <field name="res_model">loyalty.program</field>
+            <field name="view_type">form</field>
+            <field name="view_mode">tree,kanban,form</field>
+            <field name="help" type="html">
+                <p class="oe_view_nocontent_create">
+                    Click to create a Loyalty Program.
+                </p><p>
+                    Loyalty Programs allows you customer to earn points
+                    and rewards when doing business at your shops.
+                </p>
+            </field>
+        </record>
+
+        <menuitem id="sale.menu_sale_quotations"
+                  action="action_draft_orders"
+                  parent="sale.sale_order_menu" sequence="11"/>
+
+        <menuitem id="sale.menu_sale_order"
+                  name="Confirmed Orders"
+                  action="sale.action_orders"
+                  parent="sale.sale_order_menu"
+                  sequence="13" groups="sales_team.group_sale_salesman"/>
+
+        <menuitem id="menu_sale_order_exceptions"
+                  action="action_sale_order_exceptions"
+                  parent="sale.sale_order_menu" sequence="14" name="Sale Order Exceptions"/>
+        <menuitem id="menu_sale_order_cancelled"
+                  action="action_sale_order_cancelled"
+                  parent="sale.sale_order_menu" sequence="15" name="Cancelled Orders"/>
+
+        <!--group product menus-->
+        <!--<menuitem name="Products" id="menu_product_group_root" parent="sales_team.menu_sales" sequence="13"/>
+        <menuitem action="product.product_template_action" id="sale.menu_product_template_action" parent="menu_product_group_root" sequence="13" />
+        <menuitem id="sale.menu_products" action="product.product_normal_action_sell" parent="menu_product_group_root" groups="product.group_product_variant" sequence="99"/>
+        -->
+
+    </data>
+</openerp>

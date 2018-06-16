@@ -1,0 +1,10 @@
+id,name,model_id:id,group_id:id,perm_read,perm_write,perm_create,perm_unlink
+access_sms_all,access_sms_all,model_sms_message,sales_team.group_sale_salesman,True,False,False,False
+access_sms_manager,access_sms_manager,model_sms_message,sales_team.group_sale_manager,True,True,True,True
+access_bulk_orders_sale_manager,bulk.orders.sale.manager,copia_sale.model_bulk_orders,sales_team.group_sale_manager,1,1,1,1
+access_bulk_orders_sale_salesman,bulk.orders.sale.salesman,copia_sale.model_bulk_orders,sales_team.group_sale_salesman,1,0,0,0
+access_sale_order,sale.order,copia_sale.model_sale_order,sales_team.group_sale_salesman,1,1,1,0
+access_split_list,split.list,copia_sale.model_split_list,sales_team.group_sale_salesman,1,1,1,0
+access_product_list,product.split,copia_sale.model_product_split,sales_team.group_sale_salesman,1,1,1,0
+access_sale_holiday_all,sale.holiday,copia_sale.model_sale_holiday,,1,0,0,0
+access_sale_holiday,sale.holiday,copia_sale.model_sale_holiday,sales_team.group_sale_manager,1,1,1,1

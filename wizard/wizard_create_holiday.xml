@@ -1,0 +1,55 @@
+<?xml version="1.0"?>
+<odoo>
+    <data>
+
+        <!-- wizard.holiday.create: form -->
+        <record id="view_wizard_create_holiday_form" model="ir.ui.view">
+            <field name="name">wizard.holiday.create.form</field>
+            <field name="model">wizard.holiday.create</field>
+            <field name="arch" type="xml">
+                <form string="Create holidays">
+                    <h4>Create holidays Guide</h4>
+                    <p>
+                        Select a from date and a to date and then pick the days of the week you want to create holidays for
+                    </p>
+                    <group>
+                        <field name="company_id"/>
+                        <field name="from_date"/>                        
+                        <field name="to_date"/>
+                    </group>
+                    <group>
+                        <field name="mon"/>
+                        <field name="tue"/>
+                        <field name="wed"/>
+                        <field name="thur"/>
+                        <field name="fri"/>
+                        <field name="sat"/>
+                        <field name="sun"/>
+                    </group>
+                    <footer>
+                        <button class="oe_highlight" name="create_holidays" string="Create" type="object"/>
+                        or
+                        <button class="oe_link" icon="fa-close" special="cancel" string="Cancel"/>
+                    </footer>
+                </form>
+            </field>
+        </record>
+
+        <!-- action -->
+        <record model="ir.actions.act_window" id="generate_holidays_menu_action">
+        <field name="name">Generate Holidays</field>
+        <field name="res_model">wizard.holiday.create</field>
+        <field name="view_type">form</field>
+        <field name="view_mode">form</field>
+        <field name="target">new</field>
+        <field name="help" type="html">
+            <p class="oe_view_nocontent_create">Generate Holidays automatically
+            </p>
+        </field>
+        </record>
+
+        <!-- menu -->
+        <menuitem name="Generate Holidays" id="generate_holidays_menu" parent="menu_holidays_config" action="generate_holidays_menu_action"/>
+
+    </data>
+</odoo>

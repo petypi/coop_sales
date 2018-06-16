@@ -1,0 +1,13 @@
+-
+  !python {model: ir.config_parameter, id: False}: |
+    self.env["ir.config_parameter"].set_param("module_delivery", True)
+#    self.env["ir.config_parameter"].set_param("group_product_variant", True)
+#    self.env["ir.config_parameter"].set_param("multi_sales_price", True)
+#    self.env["ir.config_parameter"].set_param("group_sale_delivery_address", True)
+#    self.env["ir.config_parameter"].set_param("default_invoice_policy", "delivery")
+-
+  !python {model: product.product, id: delivery.product_product_delivery}: |
+    self[0].write({"name": "Home Delivery", "default_code": "HDL", "list_price": 200.0})
+-
+  !python {model: delivery.carrier, id: delivery.free_delivery_carrier}: |
+    self[0].write({"name": "Home Delivery Charges", "fixed_price": 200.0, "free_over": False})

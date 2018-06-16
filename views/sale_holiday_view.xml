@@ -1,0 +1,57 @@
+<odoo>
+  <data>
+
+    <record id="view_sale_holiday_calendar" model="ir.ui.view">
+        <field name="name">sale.holiday.calendar</field>
+        <field name="model">sale.holiday</field>
+        <field name="arch" type="xml">
+            <calendar string="Sales Holidays" date_start="holiday_date">
+                <field name="name"/>
+            </calendar>
+        </field>
+    </record>
+
+    <record model="ir.ui.view" id="holiday_tree_view">
+      <field name="name">Holidays</field>
+      <field name="model">sale.holiday</field>
+      <field name="arch" type="xml">
+        <tree>
+          <field name="name"/>          
+          <field name="holiday_date"/>
+          <field name="company_id"/>
+        </tree>
+      </field>
+    </record>
+
+    <record model="ir.ui.view" id="holiday_form_view">
+      <field name="name">Holiday</field>
+      <field name="model">sale.holiday</field>
+      <field name="arch" type="xml">
+        <form string="Holiday Form">
+          <sheet>
+            <group>              
+              <field name="name"/>
+              <field name="holiday_date"/>
+              <field name="company_id"/>
+            </group>
+          </sheet>
+        </form>
+      </field>
+    </record>
+    <!-- Window actions -->
+    <record model="ir.actions.act_window" id="holiday_menu_action">
+        <field name="name">Holidays</field>
+        <field name="res_model">sale.holiday</field>
+        <field name="view_type">form</field>
+        <field name="view_mode">tree,form,calendar</field>
+        <field name="help" type="html">
+            <p class="oe_view_nocontent_create">New holiday
+            </p>
+        </field>
+    </record>    
+    <!-- Menu under Sales -->
+    <menuitem id="menu_holidays_config" name="Sale Holidays" parent="sale.menu_sale_config" sequence="3"/>
+    <menuitem name="Holidays" id="holiday_items_menu" parent="menu_holidays_config" action="holiday_menu_action"/>   
+
+  </data>
+</odoo>

@@ -1,0 +1,93 @@
+<odoo>
+  <data>    
+		<record model="ir.ui.view" id="split_list_form_view">
+			<field name="name">Split List</field>
+			<field name="model">split.list</field>
+			<field name="type">form</field>
+			<field name="arch" type="xml">
+				<form string="Split Order by Category">
+				    <group>
+						<field name="name"/>                        
+                        <field name="max_weight"/>
+                    </group>
+					<group>
+						<field name="category_ids"/>
+					</group>
+				</form>
+			</field>
+		</record>	
+		
+	   <record model="ir.ui.view" id="split_list_tree_view">
+			<field name="name">Split List</field>
+			<field name="model">split.list</field>
+			<field name="type">tree</field>
+			<field name="arch" type="xml">
+				<tree string="Split List">
+                    <field name="name"/>
+                    <field name="max_weight"/>
+				</tree>
+		   </field>
+		</record>
+
+        <record model="ir.ui.view" id="product_split_form_view">
+			<field name="name">Product Split</field>
+			<field name="model">product.split</field>
+			<field name="type">form</field>
+			<field name="arch" type="xml">
+				<form string="Split Order by Product">
+				    <group>
+                        <field name="product_id"/>
+                        <field name="quantity"/>
+                    </group>
+				</form>
+			</field>
+		</record>	
+		
+	   <record model="ir.ui.view" id="product_split_tree_view">
+			<field name="name">product Split</field>
+			<field name="model">product.split</field>
+			<field name="type">tree</field>
+			<field name="arch" type="xml">
+				<tree string="Product Split">
+                    <field name="product_id"/>
+                    <field name="quantity"/>
+				</tree>
+		   </field>
+		</record>                
+
+		<record model='ir.actions.act_window' id='action_split_list'>
+			<field name="name">Split List</field>
+			<field name="res_model">split.list</field>
+			<field name="view_type">form</field>
+			<field name="view_mode">tree,form</field>
+			<field name="target">current</field>
+		</record>
+
+        <record model='ir.actions.act_window' id='action_product_split'>
+			<field name="name">Product Split</field>
+			<field name="res_model">product.split</field>
+			<field name="view_type">form</field>
+			<field name="view_mode">tree,form</field>
+			<field name="target">current</field>
+		</record>		
+		
+        <menuitem id="menu_order_split" parent="sale.menu_sale_config" name="Split Rules" sequence="4"/>
+        
+        <record model="ir.ui.menu" id="menu_split_list">
+            <field name="name">Split List</field>
+            <field name="action" ref="action_split_list" />
+            <field name="parent_id" ref="menu_order_split"/>
+			<field name='sequence' eval='0'/>
+        </record>
+
+		
+		
+		
+        <record model="ir.ui.menu" id="menu_product_split">
+            <field name="name">Product Split</field>
+            <field name="action" ref="action_product_split" />
+            <field name="parent_id" ref="menu_order_split"/>
+			<field name='sequence' eval='1'/>
+        </record>
+  </data>
+</odoo>

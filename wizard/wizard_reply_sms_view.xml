@@ -1,0 +1,25 @@
+<?xml version="1.0" encoding="utf-8"?>
+<odoo>
+    <data>
+        <record id="view_reply_sms" model="ir.ui.view">
+            <field name="name">Reply to Message</field>
+            <field name="model">wizard.reply.sms</field>
+            <field name="arch" type="xml">
+            <form string="Reply to Message" version="7.0">
+		        <group>
+                    <field name="to"/>
+                    <field name="text"/>
+                    <field name="original_text"/>
+                </group>
+                <footer>
+                    <button name="send_sms" string="Send" type="object" class="oe_highlight"/>
+                    or
+                    <button string="Cancel" class="oe_link" special="cancel" />
+                </footer>                
+            </form>
+            </field>
+        </record>
+    </data>
+</odoo>
+
+

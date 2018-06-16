@@ -1,0 +1,69 @@
+<?xml version="1.0" encoding="utf-8"?>
+<openerp>
+    <data>
+
+        <!-- wizard: form -->
+        <record id="view_bulk_orders_upload" model="ir.ui.view">
+            <field name="name">Import Bulk Orders</field>
+            <field name="model">wizard.bulk.orders.import</field>
+            <field name="arch" type="xml">
+                <form string="Bulk Orders Upload">
+                    <div>
+                        <h4>Format Guide</h4>
+                        <p>
+                            Please format the <strong>CSV</strong> file as follows:
+                            <ul>
+                                <li>Customer Phone Number <i>(as 2547xxxxxxxx)</i></li>
+                                <li>Product Code <i>(eg. SP393)</i></li>
+                                <li>Quantity <i>(eg. 3)</i></li>
+                            </ul>
+                        </p>
+                    </div>
+                    <group>
+                            <field name="state" invisible="1"/>
+			    <field name="data_file" filename="file_name" attrs="{'invisible':[('state', '=', 'done')]}"/>
+			    <field name="free_product" />
+			    <field name="sms_include" />
+                            <field name="line_ids" string="Order Details" attrs="{'invisible':[('state', '=', 'draft')]}" create="False">
+                                <tree string="Payments Details">
+                                    <field name="customer_id"/>
+                                    <field name="product_id"/>
+                                    <field name="quantity"/>
+                                </tree>
+                                <form string="Order Details" create="False">
+                                    <group>
+                                        <field name="customer_id"/>
+                                        <field name="product_id"/>
+                                        <field name="quantity"/>
+                                    </group>
+                                </form>
+                            </field>
+                    </group>
+                    <footer>
+                        <button class="oe_highlight" name="import_bulk_order_csv" string="Import" type="object" attrs="{'invisible':[('state', '=', 'done')]}"/>
+                        <button class="oe_highlight" name="confirm_orders" string="Confirm" type="object" attrs="{'invisible':['|', ('state', '=', 'draft')]}" confirm="Are you sure you want to commit this information?"/>
+                        or
+                        <button class="oe_link" special="cancel" string="Cancel"/>
+                    </footer>
+                </form>
+            </field>
+        </record>
+
+        <!-- wizard: action -->
+        <record id="action_view_bulk_orders_upload" model="ir.actions.act_window">
+            <field name="name">Import Bulk Orders</field>
+            <field name="type">ir.actions.act_window</field>
+            <field name="res_model">wizard.bulk.orders.import</field>
+            <field name="view_type">form</field>
+            <field name="view_mode">form</field>
+            <field name="target">new</field>
+        </record>
+
+        <!-- menus -->
+        <menuitem
+            action="action_view_bulk_orders_upload"
+            id="menu_view_bulk_orders_upload"
+            parent="menu_view_bulk_orders"/>
+
+    </data>
+</openerp>

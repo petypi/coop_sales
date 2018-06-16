@@ -1,0 +1,59 @@
+<?xml version="1.0"?>
+<odoo>
+    <data>
+
+        <!-- wizard.send.sms.message: form -->
+        <record id="view_wizard_send_sms_message_form" model="ir.ui.view">
+            <field name="name">wizard.send.sms.message.form</field>
+            <field name="model">wizard.send.sms.message</field>
+            <field name="arch" type="xml">
+                <form string="Send SMS Message(s)">
+                    <h4>Send SMS Guide</h4>
+                    <p>
+                        Either add the receipient(s) using their phone number on the <b>Recepients Phone Number(s)</b>
+                        field in the format: 
+                        <ul>
+                            <li><em>&lt; number_1&gt;,&lt; number_2&gt;,&lt; number_3&gt;,&lt; number_4&gt;...</em></li>
+                        </ul>
+                        Or add them on the <b>Recepients</b> field. Or you can use <b><u>BOTH</u></b>.
+                    </p>
+                    <group>
+                        <field name="partner_phone_numbers" widget="text"/>
+                        <field name="partner_ids" domain="[('customer', '=', True)]"/>
+                        <field name="text" required="1" placeholder="Write the message here..."/>
+                    </group>
+                    <footer>
+                        <button 
+                            class="oe_highlight" 
+                            icon="fa-envelope"
+                            name="action_send_sms" 
+                            string="Send" 
+                            type="object" 
+                            confirm="Are you sure you want to send the message(s)?"/>
+                        or
+                        <button 
+                            class="oe_link" 
+                            icon="fa-close"
+                            special="cancel" 
+                            string="Cancel"/>
+                    </footer>
+                </form>
+            </field>
+        </record>
+
+        <!-- wizard.send.sms.message: action -->
+        <record id="action_wizard_send_sms_message" model="ir.actions.act_window">
+            <field name="name">Send SMS</field>
+            <field name="type">ir.actions.act_window</field>
+            <field name="res_model">wizard.send.sms.message</field>
+            <field name="context">{}</field>
+            <field name="view_type">form</field>
+            <field name="view_mode">form</field>
+            <field name="target">new</field>
+        </record>
+
+        <!-- menu -->
+        <menuitem action="action_wizard_send_sms_message" id="menu_action_send_sms_message" parent="menu_action_sms_message" sequence="4"/>
+
+    </data>
+</odoo>
